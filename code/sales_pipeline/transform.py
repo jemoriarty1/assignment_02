@@ -124,9 +124,9 @@ def clean_sales_data(raw_data: list[dict]) -> list[dict]:
             "date": row["date"],
             "item": row["item"],
             "price": clean_currency(row["price"]),
-            "qty": clean_quantity(row["qty"])
+            "qty": clean_quantity(row["qty"]),
         }
-        clean_row["total_revenue"] = clean_currency(row["price"]) * clean_quantity(row["qty"])
+        clean_row["total_revenue"] = clean_row["price"] * clean_row["qty"]
         clean_data.append(clean_row)
     return clean_data
 
@@ -190,8 +190,17 @@ def summarize_by_item(cleaned_data: list[dict]) -> list[dict]:
       "sort by revenue, biggest first, and use the name to break ties."
     """
     # TODO: your code here
-    pass
+    totals = {}
+    for row in cleaned_data:
+        item = row["item"]
 
+        if item not in totals:
+            totals[item] = {"item": item, "units_sold": 0, "revenue": 0.0}
+
+        totals[item]["units_sold"] += row["qty"]
+        totals[item]["revenue"] += row["total_revenue"]
+
+    return sorted(totals.values(), key=lambda entry: (-entry["revenue"], entry["item"]))
 
 def summarize_by_day(cleaned_data: list[dict]) -> list[dict]:
     """Roll the row-level data up to one entry per calendar day.
@@ -224,7 +233,17 @@ def summarize_by_day(cleaned_data: list[dict]) -> list[dict]:
       date" case, or the first row of each day has nothing to add itself to.
     """
     # TODO: your code here
-    pass
+    totals = {}
+    for row in cleaned_data:
+      date = row["date"]
+    
+      if date not in totals:
+        totals[date] = {"date": date, "units_sold": 0, "revenue": 0.0}
+    
+      totals[date]["units_sold"] += row["qty"]
+      totals[date]["revenue"] += row["total_revenue"]
+    
+    return sorted(totals.values(), key=lambda entry: entry["date"])
 
 
 def find_top_entry(summary: list[dict], field: str = "revenue") -> dict:
@@ -258,4 +277,11 @@ def find_top_entry(summary: list[dict], field: str = "revenue") -> dict:
       someone asks for `units_sold`.
     """
     # TODO: your code here
-    pass
+    if not summary:
+        return {}
+    largest = summary[0]
+
+    for entry in summary[1:]:
+        if entry[field] > largest[field]:
+            largest=entry
+    return largest 
