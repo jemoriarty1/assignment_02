@@ -38,7 +38,7 @@ def clean_currency(value) -> float:
     input:  "N/A"        output: 0.0
 
     How to build it:
-
+  
     - Handle `None` first, on its own line, before you touch the value at all.
     - `str(value)` makes everything after it work whether the price arrived as
       text or as a float. Then chain `.replace()` twice to drop the `$` and the
@@ -48,8 +48,15 @@ def clean_currency(value) -> float:
       report of 400 good rows.
     """
     # TODO: your code here
-    pass
+    if value is None:
+      return 0.0
+    
+    text = str(value).replace("$", "").replace(",", "").strip()
 
+    try:
+        return float(text)
+    except ValueError:
+        return 0.0
 
 def clean_quantity(value) -> int:
     """Convert a raw quantity into an int, using 0 when it cannot be read.
@@ -74,7 +81,12 @@ def clean_quantity(value) -> int:
       data, and bad data becomes `0`.
     """
     # TODO: your code here
-    pass
+    if value is None:
+          return 0
+    try:
+      return int(str(value).strip())
+    except ValueError:
+      return 0
 
 
 def clean_sales_data(raw_data: list[dict]) -> list[dict]:
@@ -105,7 +117,18 @@ def clean_sales_data(raw_data: list[dict]) -> list[dict]:
       a second time.
     """
     # TODO: your code here
-    pass
+    clean_data = []
+
+    for row in raw_data:
+        clean_row = {
+            "date": row["date"],
+            "item": row["item"],
+            "price": clean_currency(row["price"]),
+            "qty": clean_quantity(row["qty"])
+        }
+        clean_row["total_revenue"] = clean_currency(row["price"]) * clean_quantity(row["qty"])
+        clean_data.append(clean_row)
+    return clean_data
 
 
 def calculate_total_revenue(cleaned_data: list[dict]) -> float:
@@ -129,7 +152,10 @@ def calculate_total_revenue(cleaned_data: list[dict]) -> float:
       `clean_sales_data`, so `row["total_revenue"]` is a number you can trust.
     """
     # TODO: your code here
-    pass
+    total = 0.0
+    for row in cleaned_data:
+        total += row["total_revenue"]
+    return total
 
 
 def summarize_by_item(cleaned_data: list[dict]) -> list[dict]:
